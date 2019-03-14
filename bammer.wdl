@@ -37,7 +37,7 @@ task SplitBedByCoverage{
     String outbase = basename(basename(inputBED, ".gz"), ".bed")
 
     command{
-        split_bed_by_index -t 4 ${inputBED} ${inputBAM} ${outbase}.covRestricted.bed
+        split_bed_by_index -m ${inputBED} ${inputBAM} ${outbase}.covRestricted.bed
     }
 
     runtime{
@@ -122,7 +122,8 @@ task BGZTBI{
     }
 
     output{
-
+        File vcfGZ = "${outbase}.vcf.gz"
+        File vcfTBI = "${outbase}.vcf.gz.tbi"
     }
 }
 
