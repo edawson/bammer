@@ -17,8 +17,8 @@ task FreeBayesTask{
 
     runtime{
         docker : "erictdawson/freebayes"
-        cpu : 1
-        memory : "6 GB"
+        cpu : "1"
+        memory : "6G"
         preemptible : 2
         disks : "local-disk " + diskGB + " HDD"
     }
@@ -42,8 +42,8 @@ task SplitBedByCoverage{
 
     runtime{
         docker : "erictdawson/bedtools"
-        cpu : 4
-        memory : "6 GB"
+        cpu : "1"
+        memory : "3.6G"
         preemptible : 2
         disks : "local-disk " + diskGB + " HDD"
     }
@@ -67,7 +67,7 @@ task BedToRegionsTask{
     runtime{
         docker : "erictdawson/bedtools"
         cpu : 1
-        memory : "1.5 GB"
+        memory : "1.5 G"
         preemptible : 2
         disks : "local-disk " + diskGB + " HDD"
     }
@@ -91,7 +91,7 @@ task FreeBayesMergeTask{
 
     runtime{
         docker : "erictdawson/freebayes"
-        cpu : 1
+        cpu : 2
         memory : "7.2 GB"
         preemptible : 2
         disks : "local-disk " + diskGB + " HDD"
