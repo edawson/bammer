@@ -12,7 +12,7 @@ task FreeBayesTask{
     String outbase = basename(inputBAM, ".bam")
 
     command{
-        freebayes -@ ${inputVCFgz} -f ${refFA} ${inputBAM} ${region} > ${outbase}.${region}.vcf
+        freebayes --targets ${inputVCFgz} --min-coverage 15 --report-all-haplotype-alleles --report-monomorphic  -f ${refFA} ${inputBAM} ${region} > ${outbase}.${region}.vcf
     }
 
     runtime{
@@ -62,7 +62,8 @@ task BedToRegionsTask{
     String outbase = basename(basename(bedFile, ".gz"), ".bed")
 
     command{
-        zcat ${bedFile} | bed_to_samtools_region > ${outbase}.regions.txt
+        set -o pipefail
+        cat ${bedFile} | bed_to_samtools_region > ${outbase}.regions.txt
     }
     runtime{
         docker : "erictdawson/bedtools"
