@@ -9,16 +9,24 @@ task FreeBayesTask{
 
     Int diskGB
 
+    Int? mincov = 15
+
     String outbase = basename(inputBAM, ".bam")
 
     command{
-        freebayes -@ ${inputVCFgz} -f ${refFA} ${inputBAM} ${region} > ${outbase}.${region}.vcf
+        freebayes -@ ${inputVCFgz} \
+        --report-all-haplotype-alleles \
+        --report-monomorphic  \
+        -f ${refFA} \
+        --min-coverage ${mincov} \
+        ${inputBAM} ${region} \
+        > ${outbase}.${region}.vcf
     }
 
     runtime{
         docker : "erictdawson/freebayes"
-        cpu : "1"
-        memory : "6G"
+        cpu : 1
+        memory : "6 GB"
         preemptible : 2
         disks : "local-disk " + diskGB + " HDD"
     }
@@ -42,8 +50,8 @@ task SplitBedByCoverage{
 
     runtime{
         docker : "erictdawson/bedtools"
-        cpu : "1"
-        memory : "3.6G"
+        cpu : 1
+        memory : "3 GB"
         preemptible : 2
         disks : "local-disk " + diskGB + " HDD"
     }
@@ -67,7 +75,7 @@ task BedToRegionsTask{
     runtime{
         docker : "erictdawson/bedtools"
         cpu : 1
-        memory : "1.5 G"
+        memory : "1 GB"
         preemptible : 2
         disks : "local-disk " + diskGB + " HDD"
     }
@@ -92,7 +100,7 @@ task FreeBayesMergeTask{
     runtime{
         docker : "erictdawson/freebayes"
         cpu : 2
-        memory : "7.2 GB"
+        memory : "7 GB"
         preemptible : 2
         disks : "local-disk " + diskGB + " HDD"
     }
@@ -116,7 +124,7 @@ task BGZTBI{
     runtime {
         docker : "erictdawson/base"
         cpu : 1
-        memory : "1.5 GB"
+        memory : "1.6 GB"
         preemptible : 2
         disks : "local-disk " + diskGB + " HDD" 
     }
@@ -136,7 +144,7 @@ workflow FreeBayesForceCall{
     File inputVCFgz
     File inputVCFtbi
 
-    Int bigSZ = ceil(size(inputBAM, "GB") + size(refFA, "GB") + size(inputVCFgz)) + 100
+    Int bigSZ = ceil(size(inputBAM, "GB") + size(refFA, "GB") + size(inputVCFgz, "GB")) + 100
 
     String outbase = basename(inputBAM, ".bam")
 

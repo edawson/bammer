@@ -5,6 +5,9 @@ import subprocess
 
 fb = "freebayes"
 samtools = "samtools"
+bgzip = "bgzip"
+tabix = "tabix"
+vcf_sort = "vcfsort-parallel"
 pylauncher = "launcher.py"
 
 def parse_args():
@@ -18,7 +21,7 @@ def parse_args():
 
 def index_bam(bam):
     outname = basename(bam, "") + ".bai"
-    subprocess.call(samtools + " index " + bam)
+    subprocess.check_call(samtools + " index " + bam)
     return outname
 
 def basename(fi, suffix):
@@ -29,8 +32,13 @@ def sort_bam(bam):
     subprocess.call(samtools + " sort " + bam + " > " + outname)
     return outname
 
-def sort_vcf(vcf, faidx):
+def index_vcf(vcf):
+    subprocess.call(
     return None
+
+def sort_vcf(vcf, outdir="."):
+    subprocess.call(vcf_sort + " " + vcf " > " + outdir + "/" + basename(vcf, ".vcf") + ".sorted.vcf", shell = True)
+    return basename(vcf, ".vcf") + ".sorted.vcf"
 
 def call_variants_freebayes(bam, bed):
     return None
@@ -63,8 +71,7 @@ def parse_vcf_line_to_bed(line):
     pos = int(tokens[1])
     end = pos + len(tokens[3]) - 1
 
-## Extract genotype
-    
+    ## Extract genotype
     fmt = tokens[7].split(";")
     samp = tokens[8].split(";")
     g_index = 0
@@ -75,6 +82,25 @@ def parse_vcf_line_to_bed(line):
     gt = samp[i]
     gt_text = gt_to_text(gt)
     return "\t".join([str(i) for i in [chrom, pos, end, ";".join([gt_text, gt])]]), gt, gt_text
+
+def compare_positions(chr1, pos1, chr2, pos2):
+    return chr1 == chr2 and pos1 == pos2
+
+def compare_vcfs(vcf1, vcf2):
+    cp = compare_positions
+
+    same_count = 0
+    diff_count = 0
+    het_hom_count = 0
+    hom_het_count = 0
+    missing_first_count = 0
+    missing_second_count = 0
+    with open(vcf1, "r") as first and \
+    open(vcf2, "r") as second:
+        for line in  
+
+
+
 
 
 if __name__ == "__main__":
