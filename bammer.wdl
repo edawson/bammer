@@ -5,22 +5,24 @@ task FreeBayesTask{
     File refFAI
     File inputVCFgz
     File inputVCFtbi
-    String region
+    File regionsBED
 
     Int diskGB
 
     Int? mincov = 15
 
     String outbase = basename(inputBAM, ".bam")
+    String bedbase = basename(basename(regionsBED, ".gz"), ".bed")
 
     command{
         freebayes -@ ${inputVCFgz} \
         --report-all-haplotype-alleles \
+        --targets ${regionsBED} \
         --report-monomorphic  \
         -f ${refFA} \
         --min-coverage ${mincov} \
-        ${inputBAM} ${region} \
-        > ${outbase}.${region}.vcf
+        ${inputBAM} \
+        > ${outbase}.${bedbase}.vcf
     }
 
     runtime{
@@ -32,35 +34,9 @@ task FreeBayesTask{
     }
 
     output{
-        File FreeBayesVCF = "${outbase}.${region}.vcf"
+        File FreeBayesVCF = "${outbase}.${bedbase}.vcf"
     }
 }
-
-task SplitBedByCoverage{
-    File inputBAM
-    File inputBAI
-    File inputBED
-    Int diskGB 
-
-    String outbase = basename(basename(inputBED, ".gz"), ".bed")
-
-    command{
-        split_bed_by_index -m ${inputBED} ${inputBAM} ${outbase}.covRestricted.bed
-    }
-
-    runtime{
-        docker : "erictdawson/bedtools"
-        cpu : 1
-        memory : "3 GB"
-        preemptible : 2
-        disks : "local-disk " + diskGB + " HDD"
-    }
-
-    output{
-        File coverageSplitBed = "${outbase}.covRestricted.bed"
-    }
-}
-
 
 
 task BedToRegionsTask{
@@ -111,6 +87,27 @@ task FreeBayesMergeTask{
     }
 }
 
+task ShardBED{
+    File inputBED
+
+    String outbase = basename( basename(inputBED, ".gz"), ".bed")
+
+    command{
+        split -a 5 -d -l 10000 ${inputBED} ${outbase}.shard.bed.
+    }
+
+    runtime{
+        docker : "erictdawson/base"
+        cpu : 1
+        memory : "1 GB" 
+        disks : "local-disk 50 HDD"
+    }
+
+    output{
+        Array[File] bedShards = glob("*.shard.bed*")
+    }
+}
+
 task BGZTBI{
     File inputVCF
     Int diskGB
@@ -140,6 +137,7 @@ workflow FreeBayesForceCall{
     File inputBAM
     File inputBAI
     File regionsBED
+    File freebayesRegionsFile
     File refFA
     File refFAI
     File inputVCFgz
@@ -149,25 +147,15 @@ workflow FreeBayesForceCall{
 
     String outbase = basename(inputBAM, ".bam")
 
-    call SplitBedByCoverage{
+    Int brSZ = ceil(size(regionsBED, "GB") * 2) + 50
+
+    call ShardBED{
         input:
-            inputBAM=inputBAM,
-            inputBAI=inputBAI,
-            inputBED=regionsBED,
-            diskGB=bigSZ
+            inputBED=regionsBED
     }
 
-    Int brSZ = ceil(size(SplitBedByCoverage.coverageSplitBed, "GB") * 2) + 50
-
-    call BedToRegionsTask{
-        input:
-            bedFile=SplitBedByCoverage.coverageSplitBed,
-            diskGB=brSZ
-    }
     
-
-    
-    scatter (reg in read_lines(BedToRegionsTask.regionsFile)){
+    scatter (reg in ShardBED.bedShards){
         call FreeBayesTask{
             input:
                 inputBAM=inputBAM,
@@ -176,7 +164,7 @@ workflow FreeBayesForceCall{
                 refFAI=refFAI,
                 inputVCFgz=inputVCFgz,
                 inputVCFtbi=inputVCFtbi,
-                region=reg,
+                regionsBED=reg,
                 diskGB=bigSZ
         }
     }
