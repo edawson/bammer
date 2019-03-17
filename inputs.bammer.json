@@ -1,0 +1,11 @@
+{
+  "FreeBayesForceCall.refFA": "/Users/dawsonet/Dropbox/refs/Homo_sapiens_assembly19.fasta",
+  "FreeBayesForceCall.inputBAI": "/Users/dawsonet/sandbox/dawdl/data/REBC-AC99-NB1-A-1-0-D-A49U-36.bam.bai",
+  "FreeBayesForceCall.regionsBED": "/Users/dawsonet/Dropbox/refs/OmniX-Epic-snps.cleaned.sorted.noXY.slop5bpEachSide.bed",
+  "FreeBayesForceCall.inputVCFtbi": "/Users/dawsonet/Dropbox/refs/OmniX-Epic-snps.cleaned.sorted.vcf.gz.tbi",
+  "FreeBayesForceCall.inputBAM": "/Users/dawsonet/sandbox/dawdl/data/REBC-AC99-NB1-A-1-0-D-A49U-36.bam",
+  "FreeBayesForceCall.refFAI": "/Users/dawsonet/Dropbox/refs/Homo_sapiens_assembly19.fasta.fai",
+  "FreeBayesForceCall.inputVCFgz": "/Users/dawsonet/Dropbox/refs/OmniX-Epic-snps.cleaned.sorted.vcf.gz",
+  "FreeBayesForceCall.freebayesRegionsFile": "/Users/dawsonet/Dropbox/refs/freebayes.regions.hg19.txt"
+}
+
