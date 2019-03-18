@@ -15,6 +15,7 @@ task FreeBayesTask{
     String bedbase = basename(basename(regionsBED, ".gz"), ".bed")
 
     command{
+        tabix -f ${inputVCFgz} && \
         freebayes -@ ${inputVCFgz} \
         --report-all-haplotype-alleles \
         --targets ${regionsBED} \
@@ -70,7 +71,7 @@ task FreeBayesMergeTask{
     command{
         cat_file_of_files ${write_lines(inputVCFs)} | \
         vcffirstheader | \
-        vcfstreamsort -w 1000 | \
+        vcfsort-streaming-parallel | \
         vcfuniq > ${outbase}.vcf
     }
 
@@ -89,11 +90,12 @@ task FreeBayesMergeTask{
 
 task ShardBED{
     File inputBED
+    Int? shardSize = 10000
 
     String outbase = basename( basename(inputBED, ".gz"), ".bed")
 
     command{
-        split -a 5 -d -l 10000 ${inputBED} ${outbase}.shard.bed.
+        split -a 5 -d -l ${shardSize} ${inputBED} ${outbase}.shard.bed.
     }
 
     runtime{
